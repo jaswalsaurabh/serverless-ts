@@ -1,6 +1,6 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import middy from "middy";
-import { cors } from "middy/middlewares";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import middy from 'middy';
+import { cors } from 'middy/middlewares';
 
 const baseHandler = async (
   event: APIGatewayProxyEvent
@@ -8,8 +8,9 @@ const baseHandler = async (
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: "Go Serverless v4.0! Your function executed successfully!",
+      message: 'Go Serverless v4.0! Your function executed successfully!',
       event,
+      bro: 'I am bro',
     }),
   };
 };
