@@ -3,6 +3,7 @@ import { CognitoAuthService, ServiceError } from '../common/CognitoService';
 import middy from '@middy/core';
 import cors from '@middy/http-cors';
 import { ResponseHandler } from '../common/ResponseHandler';
+import { CONSTANTS } from '../config/CONSTANTS';
 
 const loginHandler = async (event: APIGatewayProxyEvent) => {
   const authService = new CognitoAuthService();
