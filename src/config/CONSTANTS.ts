@@ -1,4 +1,4 @@
-const CONSTANTS = {
+export const CONSTANTS = {
   resCode: {
     HTTP_OK: 200,
     HTTP_CREATE: 201,
