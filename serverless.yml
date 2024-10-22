@@ -10,6 +10,7 @@ provider:
 
 resources:
   Resources:
+
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -86,6 +87,17 @@ resources:
                 - Effect: Allow
                   Action: 'cognito-identity:*'
                   Resource: '*'
+
+    ApiGatewayAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: cognito-authorizer
+        Type: COGNITO_USER_POOLS
+        IdentitySource: method.request.header.Authorization
+        RestApiId: !Ref ApiGatewayRestApi
+        ProviderARNs:
+          - !GetAtt CognitoUserPool.Arn
+
 outputs:
   UserPoolId:
     Value: !Ref CognitoUserPool
@@ -122,6 +134,18 @@ functions:
           path: verify-otp
           method: post
           cors: true
+
+  getUser:
+    handler: src/services/user.handler
+    events:
+      - http:
+          path: /user
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+            scopes: []
   
   signIn:
     handler: src/services/signIn.handler
@@ -137,5 +161,19 @@ package:
   patterns:
     - "!**/*"
     - ".dist/**"
+
+
+custom:
+  cors:
+    origins:
+      - '*'  # Replace with your specific domains in production
+    headers:
+      - Content-Type
+      - Authorization
+      - X-Amz-Date
+      - X-Api-Key
+      - X-Amz-Security-Token
+      - X-Amz-User-Agent
+    allowCredentials: true
 
 
