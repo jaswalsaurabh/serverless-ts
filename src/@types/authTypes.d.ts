@@ -6,7 +6,7 @@ export interface RegisterUserInput {
   phoneNumber?: string;
 }
 
-export interface RegisterUserResponse {
+export interface AuthServiceResponse {
   success: boolean;
   message: string;
   userId?: string;

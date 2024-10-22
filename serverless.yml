@@ -113,6 +113,14 @@ functions:
           path: register
           method: post
           cors: true
+  
+  verifyOtp:
+    handler: src/services/verifyOtp.handler
+    events:
+      - http:
+          path: verify-otp
+          method: post
+          cors: true
             
 
 package:
