@@ -6,6 +6,15 @@ export interface APIResponse {
   };
 }
 
+export type ServiceErrorType =
+  | 'RegistrationError'
+  | 'VerificationError'
+  | 'AuthenticationError'
+  | 'UserNotFoundError'
+  | 'PasswordResetError'
+  | 'VerifyAttributeError'
+  | 'ResendOTPError';
+
 export interface ResponseBody<T = any> {
   success: boolean;
   data?: T;

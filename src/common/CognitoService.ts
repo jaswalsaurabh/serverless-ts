@@ -1,12 +1,22 @@
 import {
+  AuthFlowType,
   CognitoIdentityProviderClient,
+  ConfirmForgotPasswordCommand,
   ConfirmSignUpCommand,
+  ForgotPasswordCommand,
+  InitiateAuthCommand,
+  ResendConfirmationCodeCommand,
   SignUpCommand,
   SignUpCommandInput,
+  VerifyUserAttributeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
-import { AuthServiceResponse, RegisterUserInput } from '../@types/authTypes';
+import {
+  CognitoResponse,
+  RegisterUserInput,
+  SignInResponse,
+} from '../@types/authTypes';
+import { ServiceErrorType } from '../@types/response';
 
-type ServiceErrorType = 'RegistrationError' | 'VerificationError';
 export class ServiceError extends Error {
   constructor(message: string, name: ServiceErrorType) {
     super(message);
@@ -34,9 +44,7 @@ export class CognitoAuthService {
     }
   }
 
-  async registerUser(
-    userData: RegisterUserInput
-  ): Promise<AuthServiceResponse> {
+  async registerUser(userData: RegisterUserInput): Promise<CognitoResponse> {
     try {
       // Validate input
       this.validateUserInput(userData);
@@ -119,7 +127,7 @@ export class CognitoAuthService {
   async confirmRegistration(
     email: string,
     code: string
-  ): Promise<AuthServiceResponse> {
+  ): Promise<CognitoResponse> {
     try {
       console.log('email', email, '  code', code);
 
@@ -160,6 +168,252 @@ export class CognitoAuthService {
       throw new ServiceError(
         'An unexpected error occurred during verification',
         'VerificationError'
+      );
+    }
+  }
+
+  /**
+   * Resend verification code
+   */
+  async resendVerificationCode(email: string): Promise<CognitoResponse> {
+    try {
+      const command = new ResendConfirmationCodeCommand({
+        ClientId: this.CLIENT_ID,
+        Username: email,
+      });
+
+      await this.cognitoClient.send(command);
+
+      return {
+        success: true,
+        message: 'Verification code has been resent to your email.',
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.name) {
+          case 'UserNotFoundException':
+            throw new ServiceError('User not found', 'ResendOTPError');
+          case 'LimitExceededException':
+            throw new ServiceError(
+              'Too many attempts. Please try again later.',
+              'ResendOTPError'
+            );
+          default:
+            throw new ServiceError(
+              `Failed to resend code: ${error.message}`,
+              'ResendOTPError'
+            );
+        }
+      }
+      throw new ServiceError(
+        'An unexpected error occurred while resending verification code',
+        'ResendOTPError'
+      );
+    }
+  }
+
+  /**
+   * Verify user attribute (like phone number) after registration
+   */
+  async verifyUserAttribute(
+    accessToken: string,
+    attributeName: string,
+    code: string
+  ): Promise<CognitoResponse> {
+    try {
+      const command = new VerifyUserAttributeCommand({
+        AccessToken: accessToken,
+        AttributeName: attributeName,
+        Code: code,
+      });
+
+      await this.cognitoClient.send(command);
+
+      return {
+        success: true,
+        message: `${attributeName} verification successful.`,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.name) {
+          case 'CodeMismatchException':
+            throw new ServiceError(
+              'Invalid verification code',
+              'VerifyAttributeError'
+            );
+          case 'ExpiredCodeException':
+            throw new ServiceError(
+              'Verification code has expired',
+              'VerifyAttributeError'
+            );
+          default:
+            throw new ServiceError(
+              `Attribute verification failed: ${error.message}`,
+              'VerifyAttributeError'
+            );
+        }
+      }
+      throw new ServiceError(
+        'An unexpected error occurred during attribute verification',
+        'VerifyAttributeError'
+      );
+    }
+  }
+
+  /**
+   * Initiate forgot password flow
+   */
+  async forgotPassword(email: string): Promise<CognitoResponse> {
+    try {
+      const command = new ForgotPasswordCommand({
+        ClientId: this.CLIENT_ID,
+        Username: email,
+      });
+
+      await this.cognitoClient.send(command);
+
+      return {
+        success: true,
+        message: 'Password reset code has been sent to your email.',
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.name) {
+          case 'UserNotFoundException':
+            throw new ServiceError('User not found', 'UserNotFoundError');
+          case 'LimitExceededException':
+            throw new ServiceError(
+              'Too many attempts. Please try again later.',
+              'PasswordResetError'
+            );
+          default:
+            throw new ServiceError(
+              `Failed to initiate password reset: ${error.message}`,
+              'PasswordResetError'
+            );
+        }
+      }
+      throw new ServiceError(
+        'An unexpected error occurred while requesting password reset',
+        'PasswordResetError'
+      );
+    }
+  }
+  /**
+   * Complete forgot password flow
+   */
+  async confirmForgotPassword(
+    email: string,
+    code: string,
+    newPassword: string
+  ): Promise<CognitoResponse> {
+    try {
+      const command = new ConfirmForgotPasswordCommand({
+        ClientId: this.CLIENT_ID,
+        Username: email,
+        ConfirmationCode: code,
+        Password: newPassword,
+      });
+
+      await this.cognitoClient.send(command);
+
+      return {
+        success: true,
+        message: 'Password has been reset successfully.',
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.name) {
+          case 'CodeMismatchException':
+            throw new ServiceError(
+              'Invalid verification code',
+              'PasswordResetError'
+            );
+          case 'ExpiredCodeException':
+            throw new ServiceError(
+              'Verification code has expired',
+              'PasswordResetError'
+            );
+          case 'InvalidPasswordException':
+            throw new ServiceError(
+              'Password does not meet requirements',
+              'PasswordResetError'
+            );
+          default:
+            throw new ServiceError(
+              `Failed to reset password: ${error.message}`,
+              'PasswordResetError'
+            );
+        }
+      }
+      throw new ServiceError(
+        'An unexpected error occurred while resetting password',
+        'PasswordResetError'
+      );
+    }
+  }
+
+  /**
+   * Sign in user with email and password
+   */
+  async signIn(email: string, password: string): Promise<SignInResponse> {
+    try {
+      const command = new InitiateAuthCommand({
+        AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
+        ClientId: this.CLIENT_ID,
+        AuthParameters: {
+          USERNAME: email,
+          PASSWORD: password,
+        },
+      });
+
+      const response = await this.cognitoClient.send(command);
+      const authResult = response.AuthenticationResult;
+
+      if (!authResult) {
+        throw new Error('Authentication failed');
+      }
+
+      return {
+        success: true,
+        message: 'Successfully signed in',
+        accessToken: authResult.AccessToken,
+        refreshToken: authResult.RefreshToken,
+        idToken: authResult.IdToken,
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        switch (error.name) {
+          case 'NotAuthorizedException':
+            throw new ServiceError(
+              'Incorrect username or password',
+              'AuthenticationError'
+            );
+          case 'UserNotConfirmedException':
+            throw new ServiceError(
+              'Please verify your email address',
+              'AuthenticationError'
+            );
+          case 'UserNotFoundException':
+            throw new ServiceError(
+              'No account found with this email',
+              'AuthenticationError'
+            );
+          case 'TooManyRequestsException':
+            throw new ServiceError(
+              'Too many sign-in attempts. Please try again later',
+              'AuthenticationError'
+            );
+          default:
+            throw new ServiceError(
+              `Sign-in failed: ${error.message}`,
+              'AuthenticationError'
+            );
+        }
+      }
+      throw new ServiceError(
+        'An unexpected error occurred during sign-in',
+        'AuthenticationError'
       );
     }
   }

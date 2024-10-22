@@ -6,8 +6,14 @@ export interface RegisterUserInput {
   phoneNumber?: string;
 }
 
-export interface AuthServiceResponse {
+export interface CognitoResponse {
   success: boolean;
   message: string;
   userId?: string;
+}
+
+interface SignInResponse extends CognitoResponse {
+  accessToken?: string;
+  refreshToken?: string;
+  idToken?: string;
 }

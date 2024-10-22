@@ -13,6 +13,8 @@ const CONSTANTS = {
     HTTP_SERVICE_UNAVAILABLE: 503,
   },
   errorTypes: {
+    REGISTRATION_FAILED: 'RegistrationFailed',
+    LOGIN_FAILED: 'LoginFailed',
     OAUTH_EXCEPTION: 'OAuthException',
     ACCESS_DENIED_EXCEPTION: 'AccessDeniedException',
     ALREADY_AUTHENTICATED: 'AlreadyAuthenticated',

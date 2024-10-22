@@ -121,6 +121,14 @@ functions:
           path: verify-otp
           method: post
           cors: true
+  
+  signIn:
+    handler: src/services/signIn.handler
+    events:
+      - http:
+          path: sign-in
+          method: post
+          cors: true
             
 
 package:
