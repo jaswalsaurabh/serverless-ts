@@ -10,10 +10,10 @@ const baseHandler = async (
     body: JSON.stringify({
       message: 'Go Serverless v4.0! Your function executed successfully!',
       event,
-      author: 'I am Don bro',
-      updatedAt: '21:57',
+      author: 'Jaswal',
+      updatedAt: '10:57',
     }),
   };
 };
 
-export const hello = middy(baseHandler).use(cors());
+export const handler = middy(baseHandler).use(cors());
