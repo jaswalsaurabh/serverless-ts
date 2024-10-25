@@ -13,6 +13,7 @@ export const CONSTANTS = {
     HTTP_SERVICE_UNAVAILABLE: 503,
   },
   errorTypes: {
+    S3_ERROR: 'S3_ERROR',
     REGISTRATION_FAILED: 'RegistrationFailed',
     LOGIN_FAILED: 'LoginFailed',
     OAUTH_EXCEPTION: 'OAuthException',

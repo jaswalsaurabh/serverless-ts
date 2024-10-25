@@ -13,6 +13,13 @@ export type ServiceErrorType =
   | 'UserNotFoundError'
   | 'PasswordResetError'
   | 'VerifyAttributeError'
+  | 'S3PreSignError'
+  | 'S3DownloadError'
+  | 'S3BucketError'
+  | 'S3CheckError'
+  | 'S3ListError'
+  | 'S3DeleteError'
+  | 'S3UploadError'
   | 'ResendOTPError';
 
 export interface ResponseBody<T = any> {
