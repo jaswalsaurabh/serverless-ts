@@ -226,6 +226,38 @@ functions:
           path: get-signed-url
           method: post
           cors: true
+
+  getAllBusRoutes:
+    handler: src/services/getAllBusRoutes.handler
+    events:
+      - http:
+          path: bus-routes
+          method: get
+          cors: true
+
+  createBusRoute:
+    handler: src/services/createBusRoute.handler
+    events:
+      - http:
+          path: bus-routes
+          method: post
+          cors: true
+
+  searchBusRoute:
+    handler: src/services/searchBusRoute.handler
+    events:
+      - http:
+          path: bus-routes/search
+          method: post
+          cors: true
+
+  autoCompletePlaces:
+    handler: src/services/autoCompletePlaces.handler
+    events:
+      - http:
+          path: bus-routes/autocomplete
+          method: get
+          cors: true
             
 
 package:
