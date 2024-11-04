@@ -258,6 +258,14 @@ functions:
           path: bus-routes/autocomplete
           method: get
           cors: true
+
+  getBusRouteById:
+    handler: src/services/getBusRouteById.handler
+    events:
+      - http:
+          path: bus-routes/{routeId}
+          method: get
+          cors: true
             
 
 package:

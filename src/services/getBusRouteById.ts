@@ -1,17 +1,21 @@
-import { APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { connectToMongoDB } from '../config/db';
 import { Bus } from '../models/Bus';
 import { ResponseHandler } from '../common/ResponseHandler';
 import middy from '@middy/core';
 import cors from '@middy/http-cors';
 
-export const baseHandler = async (): Promise<APIGatewayProxyResult> => {
+export const baseHandler = async (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
   try {
+    const pathParams = event.pathParameters || {};
+    const routeId = pathParams.routeId || '';
     await connectToMongoDB();
-    const routes = await Bus.find().populate('routeInfo');
+    const routes = await Bus.findById(routeId).populate('routeInfo');
     return ResponseHandler.success(routes);
   } catch (error) {
-    console.error('Error in getAllBus function:', error);
+    console.error('Error in getBusRouteById function:', error);
     return ResponseHandler.error(
       'An unexpected error occurred',
       500,
