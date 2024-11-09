@@ -18,6 +18,18 @@ export const getBusByRoute = async (start: string, end: string) => {
         $expr: { $lt: ['$fromIndex', '$toIndex'] },
       },
     },
+    {
+      $addFields: {
+        startDepartureTime: {
+          $arrayElemAt: ['$routeInfo.departureTime', '$fromIndex'],
+        },
+      },
+    },
+    {
+      $sort: {
+        startDepartureTime: 1, // 1 for ascending order
+      },
+    },
   ]);
 
   return buses;

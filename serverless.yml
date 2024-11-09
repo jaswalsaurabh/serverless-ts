@@ -266,6 +266,14 @@ functions:
           path: bus-routes/{routeId}
           method: get
           cors: true
+
+  getBusRouteByServiceId:
+    handler: src/services/getBusByServiceId.handler
+    events:
+      - http:
+          path: bus-routes/service/{serviceId}
+          method: get
+          cors: true
             
 
 package:
