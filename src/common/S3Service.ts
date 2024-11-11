@@ -35,9 +35,9 @@ export class S3Service {
   private readonly BUCKET_NAME: string;
   private readonly REGION: string;
 
-  constructor() {
-    this.REGION = process.env.REGION || 'us-east-1';
-    this.BUCKET_NAME = process.env.S3_BUCKET_NAME || '';
+  constructor(bucket?: string, region?: string) {
+    this.BUCKET_NAME = bucket || process.env.S3_BUCKET_NAME || '';
+    this.REGION = region || process.env.REGION || 'us-east-1';
 
     if (!this.BUCKET_NAME) {
       throw new Error('S3 Bucket name must be configured');

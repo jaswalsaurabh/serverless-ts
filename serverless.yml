@@ -162,6 +162,34 @@ resources:
               Cookies:
                 Forward: none
 
+
+    CleanUpOldObjectsLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${self:service}-${sls:stage}-cleanup-role
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        Policies:
+          - PolicyName: S3BucketAccess
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:ListBucket
+                    - s3:GetObject
+                    - s3:DeleteObject
+                  Resource:
+                    - !GetAtt PrivateS3Bucket.Arn
+                    - !Sub ${PrivateS3Bucket.Arn}/*
+
 outputs:
   UserPoolId:
     Value: !Ref CognitoUserPool
@@ -274,6 +302,12 @@ functions:
           path: bus-routes/service/{serviceId}
           method: get
           cors: true
+
+  cleanUpOldObjects:
+    handler: src/services/cleanUpOldObjects.handler
+    role: !GetAtt CleanUpOldObjectsLambdaRole.Arn
+    events:
+      - schedule: rate(1 minute)
             
 
 package:
